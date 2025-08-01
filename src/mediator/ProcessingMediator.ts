@@ -1,35 +1,40 @@
-import { DataRecord } from "../models/DataRecord";
+// mediator/ProcessingMediator.ts
 import { AccessLogWriter } from "./writers/AccessLogWriter";
 import { TransactionWriter } from "./writers/TransactionWriter";
 import { ErrorLogWriter } from "./writers/ErrorLogWriter";
 import { RejectedWriter } from "./writers/RejectedWriter";
+import { DataRecord } from "../models/DataRecord";
 
 export class ProcessingMediator {
-  private writerMap: Record<string, any>;
-  private rejectedWriter: RejectedWriter;
-  constructor(
-    accessLogWriter: AccessLogWriter,
-    transactionWriter: TransactionWriter,
-    errorLogWriter: ErrorLogWriter,
-    rejectedWriter: RejectedWriter
-  ) {
-    this.writerMap = {
-      access_log: accessLogWriter,
-      transaction: transactionWriter,
-      system_error: errorLogWriter,
-    };
-    this.rejectedWriter = rejectedWriter;
-  }
+  private accessLogWriter = new AccessLogWriter();
+  private transactionWriter = new TransactionWriter();
+  private errorWriter = new ErrorLogWriter();
+  private rejectedWriter = new RejectedWriter();
 
   onSuccess(record: DataRecord) {
-    // TODO
+    switch (record.type) {
+      case "access_log":
+        this.accessLogWriter.write(record);
+        break;
+      case "transaction":
+        this.transactionWriter.write(record);
+        break;
+      case "system_error":
+        this.errorWriter.write(record);
+        break;
+    }
   }
 
-  onRejected(original: DataRecord, error: string) {
-    // TODO
+  onRejected(record: DataRecord, error: string) {
+    this.rejectedWriter.write(record, error);
   }
 
   async finalize() {
-    // TODO
+    await Promise.all([
+      this.accessLogWriter.finalize(),
+      this.transactionWriter.finalize(),
+      this.errorWriter.finalize(),
+      this.rejectedWriter.finalize(),
+    ]);
   }
 }

@@ -3,10 +3,16 @@ import * as fs from "fs/promises";
 
 export class RejectedWriter {
   private lines: string[] = [];
+
   write(record: DataRecord, error: string) {
-    // TODO
+    const rejectedEntry = {
+      record,
+      error,
+    };
+    this.lines.push(JSON.stringify(rejectedEntry));
   }
+
   async finalize() {
-    // TODO
+    await fs.writeFile("output/rejected.jsonl", this.lines.join("\n") + "\n", "utf-8");
   }
 }

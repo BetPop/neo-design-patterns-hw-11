@@ -1,13 +1,9 @@
 import * as fs from "fs/promises";
+import { DataRecord } from "./models/DataRecord";
 import { buildAccessLogChain } from "./chain/chains/AccessLogChain";
 import { buildTransactionChain } from "./chain/chains/TransactionChain";
 import { buildSystemErrorChain } from "./chain/chains/SystemErrorChain";
 import { ProcessingMediator } from "./mediator/ProcessingMediator";
-import { AccessLogWriter } from "./mediator/writers/AccessLogWriter";
-import { TransactionWriter } from "./mediator/writers/TransactionWriter";
-import { ErrorLogWriter } from "./mediator/writers/ErrorLogWriter";
-import { RejectedWriter } from "./mediator/writers/RejectedWriter";
-import { DataRecord } from "./models/DataRecord";
 
 const handlerMap = {
   access_log: buildAccessLogChain,
@@ -16,12 +12,49 @@ const handlerMap = {
 };
 
 async function main() {
-  // зчитування даних
-  // створення mediator
-  // цикл по records:
-  //   - вибір handler-а через handlerMap
-  //   - try/catch: handle + mediator.onSuccess/onRejected
-  // finalize
+  // Зчитування вхідних даних
+  const raw = await fs.readFile("data/records.json", "utf-8");
+  const records: DataRecord[] = JSON.parse(raw);
+
+  // Створення посередника
+  const mediator = new ProcessingMediator();
+
+  let success = 0;
+  let failed = 0;
+
+  for (const record of records) {
+    const builder = handlerMap[record.type];
+    if (!builder) {
+      mediator.onRejected(record, "Unknown record type");
+      failed++;
+      continue;
+    }
+
+    // Створюємо ланцюг обробників
+    const handler = builder();
+
+    try {
+      // Обробляємо запис
+      const result = handler.handle(record);
+
+      // Передаємо результат посереднику
+      mediator.onSuccess(result);
+      success++;
+    } catch (e: any) {
+      // В разі помилки — реєструємо відхилений запис
+      mediator.onRejected(record, e.message);
+      failed++;
+    }
+  }
+
+  // Записуємо всі накопичені результати у файли
+  await mediator.finalize();
+
+  // Вивід звіту
+  console.log(`[INFO] Завантажено записів: ${records.length}`);
+  console.log(`[INFO] Успішно оброблено: ${success}`);
+  console.log(`[WARN] Відхилено з помилками: ${failed}`);
+  console.log(`[INFO] Звіт збережено у директорії output/`);
 }
 
 main();

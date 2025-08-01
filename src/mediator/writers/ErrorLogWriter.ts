@@ -3,10 +3,14 @@ import * as fs from "fs/promises";
 
 export class ErrorLogWriter {
   private lines: string[] = [];
+
   write(record: SystemErrorRecord) {
-    // TODO
+    // Конвертуємо запис у JSON-рядок і додаємо до масиву
+    this.lines.push(JSON.stringify(record));
   }
+
   async finalize() {
-    // TODO
+    // Записуємо всі рядки у файл errors.jsonl, кожен з нового рядка
+    await fs.writeFile("output/errors.jsonl", this.lines.join("\n") + "\n", "utf-8");
   }
 }

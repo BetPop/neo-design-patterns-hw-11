@@ -1,8 +1,10 @@
 import { AbstractHandler } from "../AbstractHandler";
-import { DataRecord } from "../../models/DataRecord";
 
 export class TimestampParser extends AbstractHandler {
-  protected process(record: DataRecord): DataRecord {
-    // TODO
+  protected process(record: any): any {
+    if (!record.timestamp || isNaN(Date.parse(record.timestamp))) {
+      throw new Error("Invalid timestamp");
+    }
+    return record;
   }
 }
