@@ -13,7 +13,8 @@ const handlerMap = {
 
 async function main() {
   // Зчитування вхідних даних
-  const raw = await fs.readFile("data/records.json", "utf-8");
+  const raw = await fs.readFile("src/data/records.json", "utf-8");
+
   const records: DataRecord[] = JSON.parse(raw);
 
   // Створення посередника
