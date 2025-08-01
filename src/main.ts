@@ -1,53 +1,27 @@
-import { Author } from './models/Author';
-import { Book } from './models/Book';
-import { EBook } from './models/EBook';
-import { Copy } from './models/Copy';
-import { Reader } from './models/Reader';
-import { Library } from './models/Library';
-import { BorrowService } from './services/BorrowService';
+import * as fs from "fs/promises";
+import { buildAccessLogChain } from "./chain/chains/AccessLogChain";
+import { buildTransactionChain } from "./chain/chains/TransactionChain";
+import { buildSystemErrorChain } from "./chain/chains/SystemErrorChain";
+import { ProcessingMediator } from "./mediator/ProcessingMediator";
+import { AccessLogWriter } from "./mediator/writers/AccessLogWriter";
+import { TransactionWriter } from "./mediator/writers/TransactionWriter";
+import { ErrorLogWriter } from "./mediator/writers/ErrorLogWriter";
+import { RejectedWriter } from "./mediator/writers/RejectedWriter";
+import { DataRecord } from "./models/DataRecord";
 
-// Створення автора та книг
-const author = new Author('John Doe');
-const book = new Book('The Great Book', 2020, author);
-const ebook = new EBook('Digital Book', 2021, author, '<https://example.com/ebook>');
+const handlerMap = {
+  access_log: buildAccessLogChain,
+  transaction: buildTransactionChain,
+  system_error: buildSystemErrorChain,
+};
 
-// Створення копій
-const copy1 = new Copy(book);
-const copy2 = new Copy(book);
+async function main() {
+  // зчитування даних
+  // створення mediator
+  // цикл по records:
+  //   - вибір handler-а через handlerMap
+  //   - try/catch: handle + mediator.onSuccess/onRejected
+  // finalize
+}
 
-// Створення читача
-const reader = new Reader('1', 'Alice');
-
-// Створення бібліотеки та додавання об'єктів
-const library = new Library();
-library.addAuthor(author);
-library.addBook(book);
-library.addBook(ebook);
-library.addCopy(copy1);
-library.addCopy(copy2);
-library.addReader(reader);
-
-// Створення сервісу позичання
-const borrowService = new BorrowService();
-
-// Демонстрація позичання
-console.log('Attempting to borrow copy1...');
-const borrowResult1 = borrowService.borrow(reader, copy1);
-console.log(`Borrow result: ${borrowResult1}`);
-
-console.log('Attempting to borrow copy1 again...');
-const borrowResult2 = borrowService.borrow(reader, copy1);
-console.log(`Borrow result: ${borrowResult2}`);
-
-// Демонстрація повернення
-console.log('Attempting to return copy1...');
-borrowService.returnBook(reader, copy1);
-console.log(`Copy1 is available: ${copy1.isCopyAvailable()}`);
-
-// Демонстрація поліморфізму
-console.log('\nBook descriptions:');
-console.log(book.getDescription());
-console.log(ebook.getDescription());
-
-// Спроба створити AbstractBook
-// const abstractBook = new AbstractBook('Test', 2022); // Повинно викликати помилку компіляції
+main();
