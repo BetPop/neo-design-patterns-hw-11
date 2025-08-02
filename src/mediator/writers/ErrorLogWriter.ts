@@ -11,6 +11,6 @@ export class ErrorLogWriter {
 
   async finalize() {
     // Записуємо всі рядки у файл errors.jsonl, кожен з нового рядка
-    await fs.writeFile("output/errors.jsonl", this.lines.join("\n") + "\n", "utf-8");
+    await fs.writeFile("src/output/errors.jsonl", this.lines.join("\n") + "\n", "utf-8");
   }
 }

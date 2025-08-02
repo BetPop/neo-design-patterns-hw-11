@@ -11,6 +11,6 @@ export class TransactionWriter {
   }
 
   async finalize() {
-    await fs.writeFile("output/transactions.csv", this.lines.join("\n") + "\n", "utf-8");
+    await fs.writeFile("src/output/transactions.csv", this.lines.join("\n") + "\n", "utf-8");
   }
 }

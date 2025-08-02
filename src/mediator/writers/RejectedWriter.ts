@@ -13,6 +13,6 @@ export class RejectedWriter {
   }
 
   async finalize() {
-    await fs.writeFile("output/rejected.jsonl", this.lines.join("\n") + "\n", "utf-8");
+    await fs.writeFile("src/output/rejected.jsonl", this.lines.join("\n") + "\n", "utf-8");
   }
 }
